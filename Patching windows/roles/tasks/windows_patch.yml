@@ -1,0 +1,50 @@
+---
+- name: Automated Windows Patching
+  hosts: windows
+  gather_facts: yes
+
+  tasks:
+
+    - name: Check free disk space
+      win_shell: |
+        Get-PSDrive C | Select-Object Free
+      register: diskspace
+
+    - name: Display disk space
+      debug:
+        var: diskspace.stdout
+
+    - name: Install all critical and security updates
+      win_updates:
+        category_names:
+          - CriticalUpdates
+          - SecurityUpdates
+        reboot: no
+      register: update_result
+
+    - name: Reboot if required
+      win_reboot:
+        reboot_timeout: 3600
+      when: update_result.reboot_required
+
+    - name: Verify Windows Update Service
+      win_service:
+        name: wuauserv
+      register: service_status
+
+    - name: Display service status
+      debug:
+        var: service_status.state
+
+    - name: Generate patch report
+      win_shell: |
+        Get-HotFix |
+        Sort-Object InstalledOn -Descending |
+        Select-Object -First 10 |
+        Out-File C:\Temp\PatchReport.txt
+
+    - name: Fetch patch report
+      fetch:
+        src: C:\Temp\PatchReport.txt
+        dest: ./reports/
+        flat: yes

@@ -1,0 +1,12 @@
+[windows]
+winserver01 ansible_host=10.0.1.10
+winserver02 ansible_host=10.0.1.11
+winserver03 ansible_host=10.0.1.12
+
+[windows:vars]
+ansible_connection=winrm
+ansible_port=5986
+ansible_winrm_transport=ntlm
+ansible_winrm_server_cert_validation=ignore
+ansible_user=patchadmin
+ansible_password={{ vault_windows_password }}

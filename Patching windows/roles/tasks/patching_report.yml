@@ -1,0 +1,9 @@
+- name: Generate Installed Patch Report
+  win_shell: |
+    Get-HotFix |
+    Sort InstalledOn -Descending |
+    Select -First 20
+  register: patch_report
+
+- debug:
+    var: patch_report.stdout_lines
